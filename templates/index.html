@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Face Recognition Attendance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --midnight:#1e1828;--surface:#251e35;--card:#2a2240;--card2:#312a47;
+    --border:#4a3d60;--border2:#5c4d75;--accent:#c9a0dc;--accent2:#9b72cf;
+    --accent3:#e8d5f0;--accent4:#7c5aa0;--danger:#d46b8a;--warning:#c9a05a;
+    --success:#8ab8a0;--text:#ede8f5;--text2:#c2b8d4;--muted:#7a6e90;--iris:#BAB0C8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Raleway',sans-serif;background:var(--midnight);color:var(--text);min-height:100vh;overflow-x:hidden;
+    background-image:radial-gradient(ellipse at 10% 20%,rgba(155,114,207,.08) 0%,transparent 55%),
+    radial-gradient(ellipse at 90% 80%,rgba(49,42,68,.6) 0%,transparent 60%);background-color:#1e1828;}
+  body::before{content:'';position:fixed;inset:0;
+    background-image:linear-gradient(rgba(186,176,200,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(186,176,200,.03) 1px,transparent 1px);
+    background-size:44px 44px;pointer-events:none;z-index:0;}
+  header{position:relative;z-index:10;background:linear-gradient(135deg,rgba(30,24,40,.97),rgba(42,34,64,.98));
+    border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;
+    justify-content:space-between;height:80px;backdrop-filter:blur(20px);}
+  .logo{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--accent);letter-spacing:3px;line-height:1.2;}
+  .logo span{color:var(--iris);}
+  .logo .sub{font-family:'Raleway',sans-serif;font-size:.55rem;font-weight:400;color:var(--muted);letter-spacing:4px;text-transform:uppercase;display:block;margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:2rem;}
+  .datetime-block{text-align:right;}
+  .date-display{font-size:.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+  #clock{font-family:'Cinzel',serif;font-size:1rem;font-weight:600;color:var(--accent);}
+  .reg-badge{background:linear-gradient(135deg,rgba(155,114,207,.15),rgba(186,176,200,.08));border:1px solid var(--border);border-radius:10px;padding:.45rem 1.1rem;text-align:center;}
+  .reg-badge .num{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;color:var(--accent);display:block;}
+  .reg-badge .lbl{font-size:.6rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+  .page-nav{position:relative;z-index:9;background:rgba(25,20,38,.9);border-bottom:1px solid var(--border);display:flex;gap:0;padding:0 2rem;}
+  .page-tab{padding:.9rem 1.5rem;border:none;background:transparent;color:var(--muted);font-family:'Raleway',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+  .page-tab:hover{color:var(--text2);}
+  .page-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .page{display:none;}.page.active{display:block;}
+  main{position:relative;z-index:1;max-width:1400px;margin:2rem auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+  .dashboard{position:relative;z-index:1;max-width:1400px;margin:2rem auto;padding:0 1.5rem;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .3s;}
+  .card:hover{border-color:var(--border2);}
+  .card-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;font-family:'Raleway',sans-serif;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--text2);}
+  .card-header .dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite;}
+  .dot-orchid{background:var(--accent);box-shadow:0 0 8px rgba(201,160,220,.6);}
+  .dot-violet{background:var(--accent2);box-shadow:0 0 8px rgba(155,114,207,.6);}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .card-body{padding:1.5rem;}
+  label{display:block;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;margin-top:1rem;}
+  label:first-of-type{margin-top:0;}
+  input[type="text"],input[type="password"],input[type="email"]{width:100%;background:rgba(155,114,207,.06);border:1px solid var(--border);border-radius:8px;padding:.65rem 1rem;color:var(--text);font-family:'Raleway',sans-serif;font-size:1rem;font-weight:500;outline:none;transition:border-color .2s,box-shadow .2s;}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,160,220,.12);}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.4rem;border:none;border-radius:8px;font-family:'Raleway',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase;width:100%;margin-top:.75rem;}
+  .btn:active{transform:scale(.97);}
+  .btn-orchid{background:linear-gradient(135deg,#9b72cf,#c9a0dc);color:#1e1828;box-shadow:0 4px 18px rgba(155,114,207,.3);}
+  .btn-orchid:hover{box-shadow:0 4px 28px rgba(201,160,220,.5);}
+  .btn-violet{background:linear-gradient(135deg,#6a4a9c,#9b72cf);color:#ede8f5;box-shadow:0 4px 18px rgba(106,74,156,.3);}
+  .btn-violet:hover{box-shadow:0 4px 28px rgba(155,114,207,.5);}
+  .btn-sage{background:linear-gradient(135deg,#5a8a70,#8ab8a0);color:#1a2c22;box-shadow:0 4px 15px rgba(138,184,160,.25);}
+  .btn-sage:hover{box-shadow:0 4px 25px rgba(138,184,160,.4);}
+  .btn-rose{background:linear-gradient(135deg,#a03050,#d46b8a);color:#fff;box-shadow:0 4px 15px rgba(212,107,138,.2);}
+  .btn-rose:hover{box-shadow:0 4px 25px rgba(212,107,138,.4);}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-sm{padding:.5rem 1rem;font-size:.78rem;width:auto;margin-top:0;}
+  .btn-row{display:flex;gap:.5rem;margin-top:.75rem;}
+  .btn-ghost{background:transparent;border:none;padding:.28rem .45rem;border-radius:5px;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+  .btn-ghost.del{color:rgba(212,107,138,.6);font-size:.9rem;font-weight:700;}
+  .btn-ghost.del:hover{background:rgba(212,107,138,.15);color:var(--danger);}
+  .btn-ghost.restore{color:rgba(138,184,160,.6);font-size:1rem;font-weight:700;}
+  .btn-ghost.restore:hover{background:rgba(138,184,160,.15);color:var(--success);}
+  .status-bar{background:rgba(155,114,207,.07);border:1px solid rgba(155,114,207,.2);border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.9rem;color:var(--accent);min-height:44px;display:flex;align-items:center;gap:.5rem;transition:all .3s;}
+  .status-bar.error{border-color:rgba(212,107,138,.35);color:var(--danger);background:rgba(212,107,138,.07);}
+  .status-bar.success{border-color:rgba(138,184,160,.35);color:var(--success);background:rgba(138,184,160,.07);}
+  .att-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;gap:.5rem;flex-wrap:wrap;}
+  .att-toolbar-left{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+  .rec-badge{background:rgba(155,114,207,.12);border:1px solid rgba(155,114,207,.25);border-radius:6px;padding:.2rem .6rem;font-size:.7rem;color:var(--accent2);letter-spacing:1px;font-weight:600;}
+  .trash-toggle-btn{background:rgba(201,160,220,.07);border:1px solid rgba(201,160,220,.18);border-radius:6px;padding:.2rem .65rem;font-size:.7rem;color:var(--muted);letter-spacing:1px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.3rem;}
+  .trash-toggle-btn:hover{background:rgba(201,160,220,.14);color:var(--accent);border-color:rgba(201,160,220,.3);}
+  .trash-count-pill{background:rgba(212,107,138,.18);border-radius:8px;padding:.05rem .4rem;font-size:.65rem;color:var(--danger);font-weight:700;}
+  .table-outer{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card);}
+  .table-scroll{overflow-x:auto;overflow-y:auto;max-height:260px;-webkit-overflow-scrolling:touch;}
+  .table-scroll::-webkit-scrollbar{width:5px;height:5px;}
+  .table-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,.03);}
+  .table-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+  .table-scroll::-webkit-scrollbar-corner{background:transparent;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:rgba(155,114,207,.1);padding:.6rem .85rem;text-align:left;font-family:'Raleway',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--accent2);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border);text-transform:uppercase;white-space:nowrap;}
+  td{padding:.5rem .85rem;border-bottom:1px solid rgba(74,61,96,.45);color:var(--text2);font-size:.88rem;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(155,114,207,.05);}
+  tr.row-deleting td{background:rgba(212,107,138,.07);opacity:.4;transition:opacity .28s ease,background .28s ease;}
+  .no-data{text-align:center;padding:1.75rem;color:var(--muted);font-size:.82rem;letter-spacing:1px;}
+  .trash-panel{border:1px solid rgba(201,160,220,.18);border-radius:10px;overflow:hidden;background:rgba(26,20,36,.6);margin-top:1rem;}
+  .trash-header{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:rgba(155,114,207,.06);border-bottom:1px solid rgba(201,160,220,.1);cursor:pointer;user-select:none;}
+  .trash-header-left{display:flex;align-items:center;gap:.6rem;font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .trash-badge{background:rgba(212,107,138,.14);border:1px solid rgba(212,107,138,.28);border-radius:8px;padding:.1rem .45rem;font-size:.62rem;color:var(--danger);font-weight:700;min-width:20px;text-align:center;}
+  .trash-note{font-size:.62rem;color:var(--muted);font-weight:400;letter-spacing:0;font-family:'Raleway',sans-serif;opacity:.7;}
+  .trash-chevron{font-size:.65rem;color:var(--muted);transition:transform .25s;display:inline-block;}
+  .trash-chevron.open{transform:rotate(180deg);}
+  .trash-body-collapse{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+  .trash-body-collapse.open{max-height:600px;}
+  .trash-actions-bar{display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;border-bottom:1px solid rgba(201,160,220,.1);flex-wrap:wrap;gap:.4rem;background:rgba(155,114,207,.03);}
+  .trash-actions-note{font-size:.7rem;color:var(--muted);}
+  .trash-actions-btns{display:flex;gap:.4rem;}
+  .trash-scroll{overflow-x:auto;overflow-y:auto;max-height:220px;-webkit-overflow-scrolling:touch;}
+  .trash-scroll::-webkit-scrollbar{width:4px;height:4px;}
+  .trash-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
+  .danger-zone{background:rgba(212,107,138,.05);border:1px solid rgba(212,107,138,.2);border-radius:12px;padding:1rem;margin-top:1rem;}
+  .danger-title{font-family:'Raleway',sans-serif;font-size:.62rem;letter-spacing:2px;color:var(--danger);text-transform:uppercase;margin-bottom:.75rem;font-weight:600;}
+  .danger-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+  .loader{display:none;width:16px;height:16px;border:2px solid rgba(201,160,220,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .scanning-indicator{display:none;align-items:center;gap:.75rem;background:rgba(155,114,207,.08);border:1px solid rgba(155,114,207,.2);border-radius:8px;padding:.75rem 1rem;margin-top:.75rem;font-size:.85rem;color:var(--accent2);}
+  .scanning-indicator.active{display:flex;}
+  .scan-bar{flex:1;height:4px;background:rgba(155,114,207,.2);border-radius:2px;overflow:hidden;}
+  .scan-fill{height:100%;width:30%;background:var(--accent);border-radius:2px;animation:scanMove 1.5s ease-in-out infinite;}
+  @keyframes scanMove{0%{margin-left:0}50%{margin-left:70%}100%{margin-left:0}}
+  .tabs{display:flex;gap:.25rem;background:rgba(0,0,0,.3);border-radius:10px;padding:.25rem;margin-bottom:1.5rem;}
+  .tab{flex:1;padding:.5rem;border:none;background:transparent;color:var(--muted);border-radius:8px;font-family:'Raleway',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+  .tab.active{background:rgba(155,114,207,.12);color:var(--accent);border:1px solid rgba(155,114,207,.25);}
+  .tab-panel{display:none;}.tab-panel.active{display:block;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,10,25,.75);backdrop-filter:blur(8px);z-index:100;align-items:center;justify-content:center;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--card2);border:1px solid var(--border2);border-radius:16px;padding:2rem;width:90%;max-width:440px;animation:slideUp .3s ease;}
+  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal h3{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:2px;color:var(--accent);margin-bottom:1.5rem;}
+  .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(10,5,20,.78);backdrop-filter:blur(8px);z-index:150;align-items:center;justify-content:center;}
+  .confirm-overlay.active{display:flex;}
+  .confirm-box{background:var(--card2);border:1px solid var(--border2);border-radius:16px;padding:1.75rem 2rem;width:90%;max-width:400px;animation:slideUp .25s ease;}
+  .confirm-title-txt{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:2px;color:var(--accent);margin-bottom:.6rem;}
+  .confirm-msg-txt{color:var(--text2);font-size:.9rem;line-height:1.65;margin-bottom:1.25rem;}
+  .confirm-btns{display:flex;gap:.5rem;}
+  #toast{position:fixed;bottom:2rem;right:2rem;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.5rem;max-width:360px;font-size:.9rem;z-index:999;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:.75rem;}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.success{border-color:rgba(138,184,160,.4);color:var(--success);}
+  #toast.error{border-color:rgba(212,107,138,.4);color:var(--danger);}
+  .toast-icon{font-size:1.2rem;}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem;transition:border-color .3s;}
+  .kpi-card:hover{border-color:var(--border2);}
+  .kpi-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+  .kpi-icon.a{background:rgba(201,160,220,.15);}.kpi-icon.b{background:rgba(186,176,200,.15);}
+  .kpi-icon.c{background:rgba(155,114,207,.15);}.kpi-icon.d{background:rgba(215,197,216,.12);}
+  .kpi-value{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:700;color:var(--accent);line-height:1;}
+  .kpi-label{font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:.2rem;}
+  .chart-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+  .chart-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+  .chart-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .chart-title{font-family:'Raleway',sans-serif;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);display:flex;align-items:center;gap:.5rem;}
+  .chart-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+  .chart-body{padding:1.25rem;}
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:140px;}
+  .bar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;}
+  .bar-track{flex:1;width:100%;display:flex;align-items:flex-end;}
+  .bar-fill{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent),var(--accent4));transition:height .8s cubic-bezier(.34,1.56,.64,1);min-height:4px;position:relative;}
+  .bar-fill:hover{background:linear-gradient(180deg,var(--accent3),var(--accent));cursor:pointer;}
+  .bar-fill .bar-tooltip{display:none;position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;}
+  .bar-fill:hover .bar-tooltip{display:block;}
+  .bar-label{font-size:.6rem;color:var(--muted);margin-top:4px;text-align:center;}
+  .donut-wrap{display:flex;align-items:center;justify-content:center;gap:1.5rem;}
+  .donut-svg{flex-shrink:0;}
+  .donut-legend{display:flex;flex-direction:column;gap:.6rem;}
+  .legend-item{display:flex;align-items:center;gap:.5rem;font-size:.82rem;}
+  .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .hbar-list{display:flex;flex-direction:column;gap:.75rem;}
+  .hbar-meta{display:flex;justify-content:space-between;margin-bottom:4px;font-size:.82rem;}
+  .hbar-name{color:var(--text2);font-weight:600;}.hbar-val{color:var(--accent);font-family:'Cinzel',serif;font-size:.75rem;}
+  .hbar-track{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+  .hbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent4),var(--accent));transition:width 1s cubic-bezier(.34,1.56,.64,1);}
+  .powerbi-section{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.5rem;}
+  .powerbi-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+  .powerbi-title{font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);display:flex;align-items:center;gap:.75rem;}
+  .pbi-badge{background:linear-gradient(135deg,#9b72cf,#c9a0dc);color:#1e1828;font-size:.55rem;font-weight:800;padding:2px 8px;border-radius:4px;letter-spacing:1px;}
+  .powerbi-controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+  .powerbi-input{background:rgba(155,114,207,.06);border:1px solid var(--border);border-radius:6px;padding:.4rem .75rem;color:var(--text);font-family:'Raleway',sans-serif;font-size:.85rem;outline:none;width:320px;transition:border-color .2s;}
+  .powerbi-input:focus{border-color:var(--accent);}
+  .powerbi-input::placeholder{color:var(--muted);}
+  .pbi-frame-wrap{position:relative;background:rgba(0,0,0,.3);}
+  .pbi-frame-wrap iframe{width:100%;height:540px;border:none;display:block;}
+  .pbi-placeholder{height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--muted);}
+  .pbi-placeholder-icon{font-size:3rem;opacity:.4;}
+  .pbi-placeholder-text{font-size:.9rem;text-align:center;line-height:1.6;}
+  .pbi-placeholder-steps{background:rgba(155,114,207,.07);border:1px solid rgba(155,114,207,.2);border-radius:10px;padding:1rem 1.5rem;font-size:.82rem;line-height:2;color:var(--text2);max-width:480px;}
+  .pbi-placeholder-steps strong{color:var(--accent);}
+  .dashboard-refresh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;font-size:.8rem;color:var(--muted);}
+  .dashboard-title{font-family:'Cinzel',serif;font-size:.9rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:.75rem;}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 1.5s infinite;}
+  .btn-refresh{background:rgba(155,114,207,.1);border:1px solid rgba(155,114,207,.3);border-radius:6px;padding:.35rem .9rem;color:var(--accent);font-family:'Raleway',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;}
+  .btn-refresh:hover{background:rgba(155,114,207,.2);}
+  .trash-actions-cell{display:inline-flex;gap:4px;align-items:center;justify-content:center;}
+  @media(max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}.chart-grid-3{grid-template-columns:1fr 1fr}}
+  @media(max-width:900px){main{grid-template-columns:1fr}.kpi-row{grid-template-columns:1fr 1fr}.chart-grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Face<span>ID</span><span class="sub">Attendance System</span></div>
+  <div class="header-right">
+    <div class="reg-badge">
+      <span class="num" id="reg-count">{{ registrations }}</span>
+      <span class="lbl">Registered</span>
+    </div>
+    <div class="datetime-block">
+      <div class="date-display">{{ date }}</div>
+      <div id="clock">--:--:-- --</div>
+    </div>
+  </div>
+</header>
+
+<nav class="page-nav">
+  <button class="page-tab active" onclick="switchPage('attendance',this)">📋 Attendance</button>
+  <button class="page-tab" onclick="switchPage('dashboard',this)">📊 Dashboard</button>
+</nav>
+
+<!-- PAGE 1 -->
+<div class="page active" id="page-attendance">
+<main>
+  <!-- LEFT CARD -->
+  <div class="card">
+    <div class="card-header"><div class="dot dot-orchid"></div>Attendance — Registered Users</div>
+    <div class="card-body">
+      <label>Recipient Email</label>
+      <input type="email" id="recipient-email" placeholder="user@gmail.com"/>
+      <label>Your Gmail Address</label>
+      <input type="email" id="from-email" placeholder="yourmail@gmail.com"/>
+      <label>Gmail App Password</label>
+      <input type="password" id="email-password" placeholder="••••••••••••"/>
+      <div class="btn-row">
+        <button class="btn btn-sage btn-sm" onclick="sendEmail()" style="flex:1">📧 Send Attendance</button>
+      </div>
+      <div id="email-status" class="status-bar" style="display:none"></div>
+      <hr class="divider"/>
+
+      <button class="btn btn-orchid" onclick="takeAttendance()" id="track-btn">
+        <span class="loader" id="track-loader"></span>📷 Take Attendance
+      </button>
+      <div class="scanning-indicator" id="scanning-bar">
+        <span>Camera scanning…</span>
+        <div class="scan-bar"><div class="scan-fill"></div></div>
+        <span style="font-size:.75rem">Press Q in camera window to stop</span>
+      </div>
+      <div id="attend-status" class="status-bar" style="display:none"></div>
+
+      <div class="att-toolbar" style="margin-top:1rem">
+        <div class="att-toolbar-left">
+          <span class="rec-badge" id="rec-count-badge">0 Records</span>
+          <span class="trash-toggle-btn" onclick="toggleTrash()">
+            🗑 Trash <span class="trash-count-pill" id="trash-pill">0</span>
+          </span>
+        </div>
+        <button class="btn btn-rose btn-sm" onclick="confirmEmptyAll()">⬛ Empty All</button>
+      </div>
+
+      <div class="table-outer">
+        <div class="table-scroll">
+          <table id="main-table" style="min-width:460px">
+            <thead>
+              <tr>
+                <th style="width:70px">ID</th>
+                <th style="min-width:120px">Name</th>
+                <th style="min-width:115px">Date</th>
+                <th style="min-width:100px">Time</th>
+                <th style="width:52px;text-align:center">Del</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-body">
+              <tr><td colspan="5" class="no-data">No attendance records today</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TRASH PANEL -->
+      <div class="trash-panel" id="trash-panel">
+        <div class="trash-header" onclick="toggleTrash()">
+          <div class="trash-header-left">
+            🗑 Trash
+            <span class="trash-badge" id="trash-count-badge">0</span>
+            <span class="trash-note">— restore to add back to CSV</span>
+          </div>
+          <span class="trash-chevron" id="trash-chevron">▼</span>
+        </div>
+        <div class="trash-body-collapse" id="trash-collapse-wrap">
+          <div class="trash-actions-bar">
+            <span class="trash-actions-note">Records here are already deleted from CSV</span>
+            <div class="trash-actions-btns">
+              <button class="btn btn-sage btn-sm" style="font-size:.7rem;padding:.3rem .7rem" onclick="confirmRestoreAll()">↩ Restore All</button>
+              <button class="btn btn-rose btn-sm" style="font-size:.7rem;padding:.3rem .7rem" onclick="confirmEmptyTrash()">🗑 Empty Trash</button>
+            </div>
+          </div>
+          <div class="trash-scroll">
+            <table id="trash-table" style="min-width:480px">
+              <thead>
+                <tr>
+                  <th style="width:60px">ID</th>
+                  <th style="min-width:110px">Name</th>
+                  <th style="min-width:105px">Date</th>
+                  <th style="min-width:95px">Time</th>
+                  <th style="width:80px;text-align:center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="trash-rows">
+                <tr><td colspan="5" class="no-data">Trash is empty</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+      <div class="danger-zone">
+        <div class="danger-title">⚠ Danger Zone</div>
+        <div class="danger-grid">
+          <button class="btn btn-rose btn-sm" onclick="confirmDelete('registration_csv')">Delete Reg. CSV</button>
+          <button class="btn btn-rose btn-sm" onclick="confirmDelete('attendance_csv')">Delete Att. CSV</button>
+          <button class="btn btn-rose btn-sm" style="grid-column:1/-1" onclick="confirmDelete('registered_images')">Delete All Registered Images</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT CARD -->
+  <div class="card">
+    <div class="card-header"><div class="dot dot-violet"></div>New Registration</div>
+    <div class="card-body">
+      <label>Student ID</label>
+      <div style="display:flex;gap:.5rem;">
+        <input type="text" id="student-id" placeholder="e.g. 1001"/>
+        <button class="btn btn-outline btn-sm" onclick="clearField('student-id')">✕ Clear</button>
+      </div>
+      <label>Student Name</label>
+      <div style="display:flex;gap:.5rem;">
+        <input type="text" id="student-name" placeholder="e.g. Dhvani Shah"/>
+        <button class="btn btn-outline btn-sm" onclick="clearField('student-name')">✕ Clear</button>
+      </div>
+      <div id="reg-status" class="status-bar" style="display:none"></div>
+
+     <button class="btn btn-orchid" onclick="takeImages()" id="take-btn" style="margin-top:1.25rem">
+        <span class="loader" id="take-loader"></span>📸 Take Images (10)
+    </button>
+      <!-- Same scanning indicator style as attendance -->
+      <div class="scanning-indicator" id="take-scanning">
+        <span>Camera capturing…</span>
+        <div class="scan-bar"><div class="scan-fill"></div></div>
+        <span style="font-size:.75rem">Window opens — press Q to stop early</span>
+      </div>
+
+      <button class="btn btn-violet" onclick="openPasswordModal('train')" style="margin-top:.75rem">💾 Save Profile</button>
+      <hr class="divider"/>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('help',event)">Help</button>
+        <button class="tab" onclick="switchTab('password',event)">Change Password</button>
+      </div>
+      <div class="tab-panel active" id="tab-help">
+        <div style="color:var(--text2);font-size:.9rem;line-height:1.9;">
+          <p><strong style="color:var(--accent)">Step 1</strong> — Enter Student ID &amp; Name</p>
+          <p><strong style="color:var(--accent)">Step 2</strong> — Click <em>Take Images</em> — camera window opens, captures 50 photos automatically</p>
+          <p><strong style="color:var(--accent)">Step 3</strong> — Click <em>Save Profile</em> to train model</p>
+          <p><strong style="color:var(--accent)">Step 4</strong> — In the left panel, click <em>Take Attendance</em></p>
+          <hr class="divider"/>
+          <p style="font-size:.8rem">Contact: <a href="mailto:dhvani1215@gamil.com" style="color:var(--accent2)">dhvani1215@gamil.com</a></p>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-password">
+        <label>Old Password</label>
+        <input type="password" id="old-pw" placeholder="••••••"/>
+        <label>New Password</label>
+        <input type="password" id="new-pw" placeholder="••••••"/>
+        <label>Confirm New Password</label>
+        <input type="password" id="confirm-pw" placeholder="••••••"/>
+        <button class="btn btn-orchid" onclick="changePassword()" style="margin-top:1rem">🔐 Update Password</button>
+        <div id="pw-status" class="status-bar" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- PAGE 2 – DASHBOARD -->
+<div class="page" id="page-dashboard">
+<div class="dashboard">
+  <div class="dashboard-refresh">
+    <div class="dashboard-title"><div class="live-dot"></div>Attendance Analytics Dashboard</div>
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <span id="last-refresh-label" style="font-size:.75rem;color:var(--muted);">Loading…</span>
+      <button class="btn-refresh" onclick="loadDashboard()">⟳ Refresh</button>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-icon a">📅</div><div><div class="kpi-value" id="kpi-today">—</div><div class="kpi-label">Today's Attendance</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon b">✅</div><div><div class="kpi-value" id="kpi-unique">—</div><div class="kpi-label">Unique Students Today</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon c">📚</div><div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-label">Total Records</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon d">👥</div><div><div class="kpi-value" id="kpi-registered">—</div><div class="kpi-label">Registered Students</div></div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title"><div class="dot"></div>Daily Attendance Trend (Last 7 Days)</div></div>
+      <div class="chart-body"><div class="bar-chart" id="bar-chart"><div style="color:var(--muted);font-size:.8rem;margin:auto;">Loading…</div></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title"><div class="dot" style="background:var(--accent2)"></div>Attendance Rate Today</div></div>
+      <div class="chart-body"><div class="donut-wrap" id="donut-wrap"><div style="color:var(--muted);font-size:.8rem;">Loading…</div></div></div>
+    </div>
+  </div>
+  <div class="chart-grid-3">
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title"><div class="dot" style="background:var(--accent2)"></div>Top Attendees (All Time)</div></div>
+      <div class="chart-body"><div class="hbar-list" id="top-attendees"><div style="color:var(--muted);font-size:.8rem;">Loading…</div></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title"><div class="dot" style="background:var(--iris)"></div>Hourly Check-ins (Today)</div></div>
+      <div class="chart-body"><div class="bar-chart" id="hourly-chart" style="height:120px;"><div style="color:var(--muted);font-size:.8rem;margin:auto;">Loading…</div></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><div class="chart-title"><div class="dot"></div>Today's Log</div></div>
+      <div class="chart-body" style="padding:0;">
+        <div style="max-height:180px;overflow-y:auto;">
+          <table style="font-size:.8rem;">
+            <thead><tr><th>Name</th><th>Time</th></tr></thead>
+            <tbody id="today-log-body"><tr><td colspan="2" class="no-data">No records</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="powerbi-section">
+    <div class="powerbi-header">
+      <div class="powerbi-title"><span>📊</span><span style="color:var(--text)">Power BI</span><span class="pbi-badge">LIVE REPORT</span></div>
+      <div class="powerbi-controls">
+        <input type="text" class="powerbi-input" id="pbi-url" placeholder="Paste your Power BI Embed URL here…" oninput="sessionStorage.setItem('pbi_url',this.value)"/>
+        <button class="btn btn-orchid btn-sm" onclick="embedPowerBI()" style="margin-top:0;">▶ Load Report</button>
+        <button class="btn btn-outline btn-sm" onclick="clearPBI()" style="margin-top:0;">✕ Clear</button>
+      </div>
+    </div>
+    <div class="pbi-frame-wrap" id="pbi-frame-wrap">
+      <div class="pbi-placeholder" id="pbi-placeholder">
+        <div class="pbi-placeholder-icon">📊</div>
+        <div class="pbi-placeholder-text">Connect your Power BI report for real-time insights</div>
+        <div class="pbi-placeholder-steps">
+          <strong>How to embed your Power BI report:</strong><br>
+          1. Open your report in <strong>Power BI Service</strong> (app.powerbi.com)<br>
+          2. Click <strong>File → Embed Report → Website or portal</strong><br>
+          3. Copy the <strong>embed link</strong><br>
+          4. Paste the URL above and click <strong>Load Report</strong>
+        </div>
+      </div>
+      <iframe id="pbi-iframe" style="display:none;" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal">
+    <h3>🔐 Authentication Required</h3>
+    <label>Enter Password to Save Profile</label>
+    <input type="password" id="modal-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitPasswordModal()"/>
+    <div id="modal-status" class="status-bar" style="display:none;margin-top:.75rem"></div>
+    <div style="display:flex;gap:.5rem;margin-top:1rem;">
+      <button class="btn btn-violet" onclick="submitPasswordModal()">Confirm</button>
+      <button class="btn btn-outline" onclick="closePasswordModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title-txt" id="confirm-title">Confirm</div>
+    <div class="confirm-msg-txt" id="confirm-msg">Are you sure?</div>
+    <div class="confirm-btns">
+      <button class="btn btn-rose btn-sm" id="confirm-yes-btn" onclick="doConfirm()">Yes, proceed</button>
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><span class="toast-icon" id="toast-icon">✓</span><span id="toast-msg"></span></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════════════════════ */
+function tick(){
+  var n=new Date(),h=n.getHours(),m=n.getMinutes(),s=n.getSeconds(),ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  document.getElementById('clock').textContent=
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+' '+ap;
+}
+tick(); setInterval(tick,1000);
+
+/* ══════════════════════════════════════════════════════════
+   LIVE RECORDS — mirrors what is currently in the CSV.
+   The CSV is always the source of truth.
+   Every delete → server removes from CSV.
+   Every restore → server adds back to CSV.
+   No deleted-key filtering needed.
+══════════════════════════════════════════════════════════ */
+var liveRecords = [];
+
+/* ══════════════════════════════════════════════════════════
+   TRASH — localStorage only (UI convenience for undo).
+   Items here are ALREADY deleted from the CSV.
+══════════════════════════════════════════════════════════ */
+var TRASH_KEY = 'fras_trash_v3';
+function loadTrash(){ try{ var r=localStorage.getItem(TRASH_KEY); return r?JSON.parse(r):[]; }catch(e){return[];} }
+function saveTrash(a){ try{localStorage.setItem(TRASH_KEY,JSON.stringify(a));}catch(e){} }
+
+function esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER MAIN TABLE
+══════════════════════════════════════════════════════════ */
+function renderTable(records){
+  liveRecords = (records||[]).slice();
+  var tbody = document.getElementById('attendance-body');
+  var badge = document.getElementById('rec-count-badge');
+  badge.textContent = liveRecords.length+' Record'+(liveRecords.length!==1?'s':'');
+  if(!liveRecords.length){
+    tbody.innerHTML='<tr><td colspan="5" class="no-data">No attendance records today</td></tr>';
+    tbody.onclick=null; return;
+  }
+  var html='';
+  for(var i=0;i<liveRecords.length;i++){
+    var r=liveRecords[i];
+    html+='<tr id="att-row-'+i+'">'
+      +'<td>'+esc(r.id)+'</td><td>'+esc(r.name)+'</td>'
+      +'<td>'+esc(r.date)+'</td><td>'+esc(r.time)+'</td>'
+      +'<td style="text-align:center"><button class="btn-ghost del" data-idx="'+i+'" title="Delete">✕</button></td>'
+      +'</tr>';
+  }
+  tbody.innerHTML=html;
+  tbody.onclick=function(e){
+    var btn=e.target.closest('.btn-ghost.del[data-idx]');
+    if(btn) deleteAttRow(parseInt(btn.getAttribute('data-idx'),10));
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   DELETE ROW → removes from CSV immediately, moves to trash
+══════════════════════════════════════════════════════════ */
+function deleteAttRow(idx){
+  if(idx<0||idx>=liveRecords.length) return;
+  var row=document.getElementById('att-row-'+idx);
+  if(row) row.classList.add('row-deleting');
+  var rec=liveRecords[idx];
+
+  setTimeout(function(){
+    // 1. Remove from CSV via server
+    fetch('/api/delete_attendance_record',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:rec.id,name:rec.name,date:rec.date,time:rec.time})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(!d.success) showToast('CSV delete failed: '+d.message,'error');
+    }).catch(function(){});
+
+    // 2. Push to trash
+    var trash=loadTrash();
+    var copy=Object.assign({},rec);
+    copy._trashId=Date.now()+'-'+Math.random().toString(36).slice(2);
+    trash.unshift(copy);
+    saveTrash(trash);
+
+    // 3. Re-render
+    renderTable(liveRecords.filter(function(_,i){return i!==idx;}));
+    renderTrashPanel();
+    showToast('Record deleted from CSV — moved to trash');
+    if(!trashOpen) toggleTrash();
+  },290);
+}
+
+/* ══════════════════════════════════════════════════════════
+   EMPTY ALL — deletes ALL visible records from CSV at once
+══════════════════════════════════════════════════════════ */
+function confirmEmptyAll(){
+  if(!liveRecords.length){showToast('No records to delete','error');return;}
+  var count=liveRecords.length;
+  openConfirm('⬛ Empty all records',
+    'Delete all '+count+' record(s) from CSV? You can restore them from trash.',
+    function(){
+      var snapshot=liveRecords.slice();
+      // Bulk delete from CSV
+      fetch('/api/delete_attendance_records_bulk',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({records:snapshot})
+      }).then(function(r){return r.json();}).then(function(d){
+        if(!d.success) showToast('Bulk delete issue: '+d.message,'error');
+      }).catch(function(){});
+
+      // Move all to trash
+      var trash=loadTrash(), now=Date.now();
+      snapshot.forEach(function(rec,i){
+        var copy=Object.assign({},rec);
+        copy._trashId=now+'-'+i+'-'+Math.random().toString(36).slice(2);
+        trash.unshift(copy);
+      });
+      saveTrash(trash);
+      renderTable([]);
+      renderTrashPanel();
+      showToast('All '+count+' record(s) deleted from CSV and moved to trash');
+      if(!trashOpen) toggleTrash();
+    },'Delete All');
+}
+
+/* ══════════════════════════════════════════════════════════
+   TRASH PANEL
+══════════════════════════════════════════════════════════ */
+var trashOpen=false;
+function toggleTrash(){
+  trashOpen=!trashOpen;
+  document.getElementById('trash-collapse-wrap').classList.toggle('open',trashOpen);
+  document.getElementById('trash-chevron').classList.toggle('open',trashOpen);
+}
+
+function renderTrashPanel(){
+  var trash=loadTrash();
+  saveTrash(trash);
+  document.getElementById('trash-count-badge').textContent=trash.length;
+  document.getElementById('trash-pill').textContent=trash.length;
+  var tbody=document.getElementById('trash-rows');
+  if(!trash.length){
+    tbody.innerHTML='<tr><td colspan="5" class="no-data">Trash is empty</td></tr>';
+    tbody.onclick=null; return;
+  }
+  var html='';
+  trash.forEach(function(r){
+    var tid=esc(r._trashId);
+    html+='<tr><td>'+esc(r.id)+'</td><td>'+esc(r.name)+'</td>'
+      +'<td>'+esc(r.date)+'</td><td>'+esc(r.time)+'</td>'
+      +'<td style="text-align:center"><span class="trash-actions-cell">'
+        +'<button class="btn-ghost restore" data-trashid="'+tid+'" title="Restore to CSV">↩</button>'
+        +'<button class="btn-ghost del" data-trashid="'+tid+'" title="Delete forever">✕</button>'
+      +'</span></td></tr>';
+  });
+  tbody.innerHTML=html;
+  tbody.onclick=function(e){
+    var rb=e.target.closest('.btn-ghost.restore[data-trashid]');
+    var db=e.target.closest('.btn-ghost.del[data-trashid]');
+    if(rb) restoreTrashRecord(rb.getAttribute('data-trashid'));
+    else if(db) permDeleteTrashRecord(db.getAttribute('data-trashid'));
+  };
+}
+
+/* ── Restore one → re-adds to CSV ── */
+function restoreTrashRecord(trashId){
+  var trash=loadTrash();
+  var idx=-1;
+  for(var i=0;i<trash.length;i++){if(trash[i]._trashId===trashId){idx=i;break;}}
+  if(idx===-1){showToast('Not found in trash','error');return;}
+  var rec=trash[idx];
+  var clean={id:rec.id,name:rec.name,date:rec.date,time:rec.time};
+
+  fetch('/api/restore_attendance_record',{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(clean)
+  }).then(function(r){return r.json();}).then(function(d){
+    if(!d.success){showToast('Restore failed: '+d.message,'error');return;}
+    var updatedTrash=loadTrash().filter(function(r){return r._trashId!==trashId;});
+    saveTrash(updatedTrash);
+    // Add back to live table only if today's date
+    var today=new Date();
+    var todayStr=String(today.getDate()).padStart(2,'0')+'-'
+      +String(today.getMonth()+1).padStart(2,'0')+'-'+today.getFullYear();
+    if(clean.date===todayStr) renderTable(liveRecords.concat([clean]));
+    renderTrashPanel();
+    showToast('Record restored to CSV ↩','success');
+  }).catch(function(){showToast('Network error during restore','error');});
+}
+
+/* ── Permanent delete one from trash (already gone from CSV) ── */
+function permDeleteTrashRecord(trashId){
+  openConfirm('🗑 Permanent delete',
+    'Remove this record from trash permanently? It is already deleted from the CSV.',
+    function(){
+      saveTrash(loadTrash().filter(function(r){return r._trashId!==trashId;}));
+      renderTrashPanel();
+      showToast('Permanently removed from trash','error');
+    },'Delete Forever');
+}
+
+/* ── Restore all ── */
+function confirmRestoreAll(){
+  var trash=loadTrash();
+  if(!trash.length){showToast('Trash is empty');return;}
+  openConfirm('↩ Restore all','Restore all '+trash.length+' record(s) back to CSV?',function(){
+    var toRestore=loadTrash();
+    var promises=toRestore.map(function(rec){
+      var clean={id:rec.id,name:rec.name,date:rec.date,time:rec.time};
+      return fetch('/api/restore_attendance_record',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(clean)
+      }).then(function(r){return r.json();}).catch(function(){return{success:false};});
+    });
+    Promise.all(promises).then(function(){
+      var today=new Date();
+      var todayStr=String(today.getDate()).padStart(2,'0')+'-'
+        +String(today.getMonth()+1).padStart(2,'0')+'-'+today.getFullYear();
+      var restored=toRestore.filter(function(r){return r.date===todayStr;})
+        .map(function(r){return{id:r.id,name:r.name,date:r.date,time:r.time};});
+      saveTrash([]);
+      renderTable(liveRecords.concat(restored));
+      renderTrashPanel();
+      showToast('All records restored to CSV ↩','success');
+    });
+  },'Restore All');
+}
+
+/* ── Empty trash — also does a bulk server delete for any records
+      that might still exist in CSV (safety net) ── */
+function confirmEmptyTrash(){
+  var trash=loadTrash();
+  if(!trash.length){showToast('Trash is already empty');return;}
+  openConfirm('🗑 Empty trash',
+    'Permanently delete all '+trash.length+' item(s)? They are already removed from the CSV.',
+    function(){
+      // Safety: call bulk delete in case any weren't deleted before
+      var records=trash.map(function(r){return{id:r.id,name:r.name,date:r.date,time:r.time};});
+      fetch('/api/delete_attendance_records_bulk',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({records:records})
+      }).catch(function(){});
+      saveTrash([]);
+      renderTrashPanel();
+      showToast('Trash emptied permanently','error');
+    },'Delete Forever');
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATUS POLLING
+══════════════════════════════════════════════════════════ */
+async function refreshStatus(){
+  try{var r=await fetch('/api/status');var d=await r.json();
+    document.getElementById('reg-count').textContent=d.registrations;}catch(e){}
+}
+setInterval(refreshStatus,5000);
+
+/* ══════════════════════════════════════════════════════════
+   PAGE / TAB NAV
+══════════════════════════════════════════════════════════ */
+function switchPage(name,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.page-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='dashboard') loadDashboard();
+}
+function switchTab(name,event){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+/* ══════════════════════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════════════════════ */
+function setStatus(id,msg,type){
+  type=type||'info';
+  var el=document.getElementById(id);
+  el.style.display='flex';
+  el.className='status-bar '+type;
+  el.innerHTML='<span>'+(type==='success'?'✓':type==='error'?'✕':'◈')+'</span><span>'+msg+'</span>';
+}
+function showToast(msg,type){
+  type=type||'success';
+  var t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-icon').textContent=type==='success'?'✓':'✕';
+  t.className='show '+type;
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.className='';},3500);
+}
+function setLoading(btnId,loaderId,on){
+  document.getElementById(btnId).disabled=on;
+  document.getElementById(loaderId).style.display=on?'block':'none';
+}
+function clearField(id){document.getElementById(id).value='';}
+
+/* ══════════════════════════════════════════════════════════
+   CONFIRM MODAL
+══════════════════════════════════════════════════════════ */
+var _confirmCb=null;
+function openConfirm(title,msg,cb,dangerLabel){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-msg').textContent=msg;
+  document.getElementById('confirm-yes-btn').textContent=dangerLabel||'Yes, proceed';
+  _confirmCb=cb;
+  document.getElementById('confirm-overlay').classList.add('active');
+}
+function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('active');_confirmCb=null;}
+function doConfirm(){var cb=_confirmCb;closeConfirm();if(cb)cb();}
+
+/* ══════════════════════════════════════════════════════════
+   TAKE IMAGES
+   Opens a live OpenCV window (50 images, then auto-closes).
+   The scanning indicator shows while the request is pending.
+══════════════════════════════════════════════════════════ */
+async function takeImages(){
+  var id=document.getElementById('student-id').value.trim();
+  var name=document.getElementById('student-name').value.trim();
+  if(!id||!name){showToast('Please enter both ID and Name.','error');return;}
+
+  setLoading('take-btn','take-loader',true);
+  document.getElementById('take-scanning').classList.add('active');
+  setStatus('reg-status','Camera window opening — face the camera, 50 images will be captured automatically…','info');
+
+  try{
+    var r=await fetch('/api/take_images',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:id,name:name})
+    });
+    var d=await r.json();
+    setStatus('reg-status',d.message,d.success?'success':'error');
+    showToast(d.message,d.success?'success':'error');
+  }catch(e){
+    setStatus('reg-status','Network error. Is the server running?','error');
+  }
+  setLoading('take-btn','take-loader',false);
+  document.getElementById('take-scanning').classList.remove('active');
+  refreshStatus();
+}
+
+/* ══════════════════════════════════════════════════════════
+   PASSWORD MODAL
+══════════════════════════════════════════════════════════ */
+var pendingAction=null;
+function openPasswordModal(action){
+  pendingAction=action;
+  document.getElementById('modal-pw').value='';
+  document.getElementById('modal-status').style.display='none';
+  document.getElementById('pw-modal').classList.add('active');
+  setTimeout(function(){document.getElementById('modal-pw').focus();},100);
+}
+function closePasswordModal(){document.getElementById('pw-modal').classList.remove('active');pendingAction=null;}
+async function submitPasswordModal(){
+  var pw=document.getElementById('modal-pw').value;
+  if(!pw) return;
+  if(pendingAction==='train'){
+    try{
+      var r=await fetch('/api/train',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+      var d=await r.json();
+      if(d.no_password){closePasswordModal();openSetPasswordModal();return;}
+      if(d.success){closePasswordModal();showToast(d.message);refreshStatus();}
+      else setStatus('modal-status',d.message,'error');
+    }catch(e){setStatus('modal-status','Network error','error');}
+  }
+}
+function openSetPasswordModal(){
+  var pw=prompt('No password found. Please set a new password:');
+  if(!pw) return;
+  fetch('/api/set_password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_password:pw})})
+    .then(function(r){return r.json();}).then(function(d){showToast(d.message,d.success?'success':'error');});
+}
+
+/* ══════════════════════════════════════════════════════════
+   TAKE ATTENDANCE
+   Server returns full CSV contents after marking — render directly.
+══════════════════════════════════════════════════════════ */
+async function takeAttendance(){
+  setLoading('track-btn','track-loader',true);
+  document.getElementById('scanning-bar').classList.add('active');
+  setStatus('attend-status','Camera window opening… look at the camera, press Q to stop','info');
+  try{
+    var r=await fetch('/api/track_attendance',{method:'POST'});
+    var d=await r.json();
+    setStatus('attend-status',d.message,d.success?'success':'error');
+    if(d.success){
+      showToast(d.message);
+      renderTable(d.records||[]);
+      renderTrashPanel();
+    }else showToast(d.message,'error');
+  }catch(e){
+    setStatus('attend-status','Server error. Please try again.','error');
+  }
+  setLoading('track-btn','track-loader',false);
+  document.getElementById('scanning-bar').classList.remove('active');
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHANGE PASSWORD
+══════════════════════════════════════════════════════════ */
+async function changePassword(){
+  var old=document.getElementById('old-pw').value;
+  var nw=document.getElementById('new-pw').value;
+  var cnf=document.getElementById('confirm-pw').value;
+  try{
+    var r=await fetch('/api/change_password',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({old_password:old,new_password:nw,confirm_password:cnf})});
+    var d=await r.json();
+    setStatus('pw-status',d.message,d.success?'success':'error');
+    if(d.success){showToast(d.message);['old-pw','new-pw','confirm-pw'].forEach(function(id){document.getElementById(id).value='';});}
+  }catch(e){setStatus('pw-status','Network error','error');}
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEND EMAIL
+══════════════════════════════════════════════════════════ */
+async function sendEmail(){
+  var email=document.getElementById('recipient-email').value.trim();
+  var from=document.getElementById('from-email').value.trim();
+  var pw=document.getElementById('email-password').value.trim();
+  try{
+    var r=await fetch('/api/send_email',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,from_email:from,email_password:pw})});
+    var d=await r.json();
+    setStatus('email-status',d.message,d.success?'success':'error');
+    showToast(d.message,d.success?'success':'error');
+  }catch(e){setStatus('email-status','Network error','error');}
+}
+
+/* ══════════════════════════════════════════════════════════
+   DANGER ZONE
+══════════════════════════════════════════════════════════ */
+function confirmDelete(type){
+  var labels={
+    registration_csv:'Delete the registration CSV? This cannot be undone.',
+    attendance_csv:"Delete today's attendance CSV? This cannot be undone.",
+    registered_images:'Delete ALL registered training images? This cannot be undone!'
+  };
+  var dl={registration_csv:'Delete CSV',attendance_csv:'Delete CSV',registered_images:'Delete All Images'};
+  openConfirm('⚠ Danger Zone',labels[type],function(){
+    fetch('/api/delete_'+type,{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+      showToast(d.message,d.success?'success':'error');
+      if(type==='attendance_csv'){saveTrash([]);renderTable([]);renderTrashPanel();}
+      if(type==='registration_csv') document.getElementById('reg-count').textContent='0';
+      refreshStatus();
+    });
+  },dl[type]);
+}
+
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════════ */
+async function loadDashboard(){
+  document.getElementById('last-refresh-label').textContent='Loading…';
+  try{
+    var r=await fetch('/api/attendance_stats');
+    var d=await r.json();
+    document.getElementById('kpi-today').textContent=d.today_count!=null?d.today_count:'—';
+    document.getElementById('kpi-unique').textContent=d.unique_today!=null?d.unique_today:'—';
+    document.getElementById('kpi-total').textContent=d.total_records!=null?d.total_records:'—';
+    document.getElementById('kpi-registered').textContent=d.total_students!=null?d.total_students:'—';
+    renderBarChart(d.daily_trend);
+    renderDonut(d.unique_today,d.total_students);
+    renderTopAttendees(d.top_attendees);
+    renderHourlyChart(d.hourly_dist);
+    renderTodayLog(d.today_records);
+    document.getElementById('last-refresh-label').textContent='Last updated: '+new Date().toLocaleTimeString();
+  }catch(e){document.getElementById('last-refresh-label').textContent='Failed to load data';}
+}
+function renderBarChart(trend){
+  var c=document.getElementById('bar-chart');
+  if(!trend||!trend.length){c.innerHTML='<div style="color:var(--muted);font-size:.8rem;margin:auto;">No data yet</div>';return;}
+  var max=Math.max.apply(null,trend.map(function(t){return t.count;}));if(max<1)max=1;
+  c.innerHTML=trend.map(function(t){
+    var pct=Math.round((t.count/max)*100);
+    var lbl=t.date.split('-').slice(1).join('/');
+    return '<div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="height:'+pct+'%"><div class="bar-tooltip">'+t.count+'</div></div></div><div class="bar-label">'+lbl+'</div></div>';
+  }).join('');
+}
+function renderDonut(present,total){
+  var w=document.getElementById('donut-wrap');
+  if(!total){w.innerHTML='<div style="color:var(--muted);font-size:.8rem;">No registered students</div>';return;}
+  present=present||0;
+  var pct=Math.min(100,Math.round((present/total)*100));
+  var absent=Math.max(0,total-present);
+  var r2=54,cx=70,cy=70,circ=2*Math.PI*r2,dash=(pct/100)*circ,gap=circ-dash;
+  w.innerHTML='<svg class="donut-svg" width="140" height="140" viewBox="0 0 140 140">'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r2+'" fill="none" stroke="rgba(186,176,200,.1)" stroke-width="16"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r2+'" fill="none" stroke="url(#orchidGrad)" stroke-width="16"'
+    +' stroke-dasharray="'+dash+' '+gap+'" stroke-dashoffset="'+(circ*.25)+'" stroke-linecap="round"/>'
+    +'<defs><linearGradient id="orchidGrad" x1="0%" y1="0%" x2="100%" y2="100%">'
+    +'<stop offset="0%" stop-color="#9b72cf"/><stop offset="100%" stop-color="#c9a0dc"/></linearGradient></defs>'
+    +'<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" fill="#ede8f5" font-family="Cinzel,serif" font-size="18" font-weight="700">'+pct+'%</text>'
+    +'<text x="'+cx+'" y="'+(cy+14)+'" text-anchor="middle" fill="#7a6e90" font-family="Raleway,sans-serif" font-size="10">PRESENT</text>'
+    +'</svg>'
+    +'<div class="donut-legend">'
+    +'<div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div><span>Present: <strong style="color:var(--accent)">'+present+'</strong></span></div>'
+    +'<div class="legend-item"><div class="legend-dot" style="background:rgba(186,176,200,.2)"></div><span>Absent: <strong style="color:var(--muted)">'+absent+'</strong></span></div>'
+    +'<div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div><span>Total: <strong style="color:var(--accent2)">'+total+'</strong></span></div>'
+    +'</div>';
+}
+function renderTopAttendees(list){
+  var el=document.getElementById('top-attendees');
+  if(!list||!list.length){el.innerHTML='<div style="color:var(--muted);font-size:.8rem;">No data yet</div>';return;}
+  var max=Math.max.apply(null,list.map(function(a){return a.count;}));if(max<1)max=1;
+  el.innerHTML=list.map(function(a){
+    return '<div class="hbar-item"><div class="hbar-meta"><span class="hbar-name">'+esc(a.name)+'</span><span class="hbar-val">'+a.count+'</span></div>'
+      +'<div class="hbar-track"><div class="hbar-fill" style="width:'+Math.round((a.count/max)*100)+'%"></div></div></div>';
+  }).join('');
+}
+function renderHourlyChart(dist){
+  var c=document.getElementById('hourly-chart');
+  if(!dist||!dist.length){c.innerHTML='<div style="color:var(--muted);font-size:.8rem;margin:auto;">No check-ins today</div>';return;}
+  var max=Math.max.apply(null,dist.map(function(h){return h.count;}));if(max<1)max=1;
+  c.innerHTML=dist.map(function(h){
+    var pct=Math.round((h.count/max)*100);
+    return '<div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="height:'+pct+'%;background:linear-gradient(180deg,var(--iris),rgba(186,176,200,.4))"><div class="bar-tooltip">'+h.count+'</div></div></div><div class="bar-label">'+h.hour+'</div></div>';
+  }).join('');
+}
+function renderTodayLog(records){
+  var tbody=document.getElementById('today-log-body');
+  if(!records||!records.length){tbody.innerHTML='<tr><td colspan="2" class="no-data">No records</td></tr>';return;}
+  tbody.innerHTML=records.slice().reverse().map(function(r){
+    return '<tr><td>'+esc(r.name)+'</td><td>'+esc(r.time)+'</td></tr>';
+  }).join('');
+}
+setInterval(function(){
+  if(document.getElementById('page-dashboard').classList.contains('active')) loadDashboard();
+},30000);
+
+/* ══════════════════════════════════════════════════════════
+   POWER BI
+══════════════════════════════════════════════════════════ */
+function embedPowerBI(){
+  var url=document.getElementById('pbi-url').value.trim();
+  if(!url){showToast('Please paste a Power BI embed URL first.','error');return;}
+  if(!url.startsWith('http')){showToast('Invalid URL. Must start with https://','error');return;}
+  var iframe=document.getElementById('pbi-iframe');
+  iframe.src=url; iframe.style.display='block';
+  document.getElementById('pbi-placeholder').style.display='none';
+  sessionStorage.setItem('pbi_url',url);
+  showToast('Power BI report loading…');
+}
+function clearPBI(){
+  document.getElementById('pbi-url').value='';
+  document.getElementById('pbi-iframe').src='';
+  document.getElementById('pbi-iframe').style.display='none';
+  document.getElementById('pbi-placeholder').style.display='flex';
+  sessionStorage.removeItem('pbi_url');
+}
+(function(){
+  var u=sessionStorage.getItem('pbi_url');
+  if(u){document.getElementById('pbi-url').value=u;
+    var f=document.getElementById('pbi-iframe');f.src=u;f.style.display='block';
+    document.getElementById('pbi-placeholder').style.display='none';}
+})();
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+(function init(){
+  fetch('/api/attendance_records')
+    .then(function(r){return r.json();})
+    .then(function(d){renderTable(d.records||[]);renderTrashPanel();})
+    .catch(function(){renderTable([]);renderTrashPanel();});
+})();
+</script>
+</body>
+</html>
