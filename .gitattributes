@@ -1,8 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-# Ignore templates folder
-templates/
-
-# Ignore index.html
-index.html
+# Exclude HTML files from GitHub language statistics
+*.html linguist-detectable=false
+templates/** linguist-detectable=false
